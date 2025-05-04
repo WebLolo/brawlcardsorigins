@@ -1,0 +1,22 @@
+.drop-header{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: 25%;
+}
+
+.drop-bord{
+    position: absolute;
+    left: 100px;
+    right: 100px;
+    top: 550px;
+    min-height: 18%;
+}
+.drop-footer{
+    position: absolute;
+    bottom:0;
+    left: 0;
+    right: 55%;
+    height: 25%;
+  }

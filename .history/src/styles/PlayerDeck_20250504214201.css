@@ -1,0 +1,83 @@
+.playerDeck{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+.hudDeck{
+    position: absolute;
+}
+.atkPreviewDeck{
+    color: white;
+    position: absolute;
+    bottom: 12px;
+    left: 10px;
+    font-size: 25px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .hpPreviewDeck{
+    color: white;
+    position: absolute;
+    bottom: 23%;
+    left: 170px;
+    font-size: 25px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+.cardInDeck0{
+    max-width: 23%;
+    position: absolute;
+    z-index: 0;
+    bottom: 0;
+    
+}
+
+.cardInDeck1 {
+    max-width: 22%;
+    margin-left: 5%;
+    position: absolute;
+    z-index: 1;
+    bottom: 269px;
+}
+.cardInDeck2 {
+    max-width: 22%;
+    margin-left: 10%;
+    position: absolute;
+    z-index: 2;
+    bottom: 539px;
+}
+.cardInDeck3 {
+    max-width: 22%;
+    margin-left: 15%;
+    position: absolute;
+    z-index: 3;
+    bottom: 808px;
+}
+.cardInDeck4 {
+    max-width: 22%;
+    margin-left: 20%;
+    position: absolute;
+    z-index: 4;
+    bottom: 1077px;
+}
+.cardInDeck5 {
+    max-width: 22%;
+    margin-left: 25%;
+    position: absolute;
+    z-index: 5;
+    bottom: 1346px;
+}
+.cardInDeck6 {
+    max-width: 22%;
+    margin-left: 30%;
+    position: absolute;
+    z-index: 6;
+    bottom: 1615px;
+}
+
+.fullCard{
+    max-width: 100%;
+}
