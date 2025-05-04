@@ -1,0 +1,8 @@
+.playerBoardFight{
+  position: absolute;
+  top: 550px;
+  left: 255px;
+  width: 1200px;
+  display: flex;
+  justify-content: center;
+}

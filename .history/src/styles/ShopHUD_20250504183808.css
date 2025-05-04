@@ -1,0 +1,40 @@
+.hud-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hudPersoShop {
+  position: absolute;
+  left: 770px;
+  top: 0px;
+  width: 370px;
+}
+
+.hudActu{
+  position: absolute;
+  top: 165px;
+  left: 600px;
+  width: 235px;
+  z-index: 1;
+}
+.hudLvlUp{
+  position: absolute;
+  top: 165px;
+  left: 1130px;
+  width: 235px;
+  z-index: 1;
+}
+.taverneCost{
+  position: absolute;
+  left: 1250px;
+  top: 165px;
+  width: 50px;
+  text-align: center;
+  font-size: xx-large;
+  font-weight: 700;
+  color: black;
+  z-index: 1;
+}
