@@ -1,0 +1,4054 @@
+export let uniqueID = 1000;
+export function getUniqueId() {
+  return uniqueID++;
+}
+export let boardPosition = 0;
+export function getBoardPosition() {
+  return boardPosition++;
+}
+export function getBoardPositionDec() {
+  return boardPosition--;
+}
+
+export const cards = [
+  {
+    id: 1,
+    nom: "Rok'gar Croc-des-Mers",
+    lvl: 6,
+    hp: 6,
+    baseHp: 6,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card29.png",
+    imgMinia: "img/cardfight29.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Aura: +3/+3 aux Croc-Noir. Aura Bivalente mer: +5 atk supp. Si Darka est présente: Rok'gar gagne +4/+4",
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.famille === "Croc-Noir") {
+          carte.atk += 3;
+          carte.buffAtk += 3;
+          carte.hp += 3;
+          carte.buffHp += 3;
+          carte.auraEffect = true;
+        }
+        
+      });
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraEffect === true && carte.famille === "Croc-Noir") {
+          carte.atk -= 3;
+          carte.buffAtk -= 3;
+          carte.hp -= 3;
+          carte.buffHp -= 3;
+          if(carte.buffHp === 0 && carte.buffAtk === 0){
+            carte.auraEffect = false
+          }        
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.famille === "Croc-Noir") {
+        carte.atk += 3;
+        carte.buffAtk += 3;
+        carte.hp += 3;
+        carte.buffHp += 3;
+        carte.auraEffect = true; 
+      }     
+    },
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        let karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        let bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin"){
+          if(carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Rok’gar")){
+            carte.atk += 5 + bonus;
+            carte.buffAtk += 5 + bonus;
+            carte.buffAtkBivalence += 5 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Rok’gar");
+          }
+          if(!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Rok’gar")){
+            carte.atk -= 5 + bonus;
+            carte.buffAtk -= 5 + bonus;
+            carte.buffAtkBivalence -= 5 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Rok’gar");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false
+            }
+          }
+        }
+      })
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Rok’gar")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect) {
+            carte.atk -= 5 + bonus;
+            carte.buffAtk -= 5 + bonus;
+            carte.buffAtkBivalence -= 5 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Rok’gar");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+    effetDeCouple: {
+      partenaire: "Darka la Brise-Voiles",
+      effet: (cartesBoard) => {
+        cartesBoard.forEach(carte => {
+            if (carte.famille === "Croc-Noir") {
+                carte.atk += 3;
+                carte.buffAtk += 3;
+                carte.hp += 3;
+                carte.buffHp += 3;
+            }
+        });
+      }
+    },
+  },
+  {
+    id: 2,
+    nom: "La Matriarche Sang'Thalla",
+    lvl: 6,
+    hp: 6,
+    baseHp: 6,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card30.png",
+    imgMinia: "img/cardfight30.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Aura: +5 hp aux Croc-Noir. Aura Bivalente mer: +2 hp supp. Aura Bivalente terre: +4 atk supp.",
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.famille === "Croc-Noir") {
+          carte.hp += 5;
+          carte.buffHp += 5;
+          carte.auraEffect = true;
+        }
+        
+      });
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraEffect === true && carte.famille === "Croc-Noir") {
+          carte.hp -= 5;
+          carte.buffHp -= 5;
+          if(carte.buffHp === 0 && carte.buffAtk === 0){
+            carte.auraEffect = false
+          }        
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.famille === "Croc-Noir") {
+        carte.hp += 5;
+        carte.buffHp += 5;
+        carte.auraEffect = true; 
+      }     
+    },
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        let karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        let bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+    
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Sang'Thalla")) {
+            carte.hp += 2 + bonus;
+            carte.buffHp += 2 + bonus;
+            carte.buffHpBivalence += 2 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Sang'Thalla");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Sang'Thalla")) {
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Sang'Thalla");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+        
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Terrestre") {
+          if (carte.bivalenceTerrestreEffect && !carte.bivalenceSources.includes("Sang'Thalla")) {
+            carte.atk += 4 + bonus;
+            carte.buffAtk += 4 + bonus;
+            carte.buffAtkBivalence += 4 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Sang'Thalla");
+          }
+          if (!carte.bivalenceTerrestreEffect && carte.bivalenceSources.includes("Sang'Thalla")) {
+            carte.atk -= 4 + bonus;
+            carte.buffAtk -= 4 + bonus;
+            carte.buffAtkBivalence -= 4 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Sang'Thalla");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Sang'Thalla")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect) {
+            
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.atk -= 4 + bonus;
+            carte.buffAtk -= 4 + bonus;
+            carte.buffAtkBivalence -= 4 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Sang'Thalla");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 3,
+    nom: "Shak’Noth, l’Oracle des Marées",
+    lvl: 6,
+    hp: 4,
+    baseHp: 4,
+    atk: 7,
+    atkDispo: false,
+    img: "img/card31.png",
+    imgMinia: "img/cardfight31.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    piocherCarte: true,
+    texte: "Cri: +4/+4 aux Croc-Noir présent sur le Board + invoque une carte Croc-Noir aléatoire.",
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Croc-Noir"){
+          carte.atk += 4;
+          carte.buffAtk +=4;
+          carte.hp += 4;
+          carte.buffHp +=4;
+          carte._criDeGuerreAnim = true; // 👈 animation à déclencher
+        }
+      });
+    },
+  },
+  {
+    id: 4,
+    nom: "Kaz'Drok le Maudit",
+    lvl: 6,
+    hp: 7,
+    baseHp: 7,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card32.png",
+    imgMinia: "img/cardfight32.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Debut de combat: 4 dégats à tout le Board adverse. Aura bivalente mer: +4 atk aux Croc-Noir. Aura bivalente terre: +4 hp aux Croc-Noir.",
+    aoeCible: (cartesBoardAdv) => {
+      cartesBoardAdv.forEach(carte => {
+        if(carte.bouclierUse){
+          carte.hp -= 0;
+          carte.degatsRecus = 0;
+          carte.bouclierUse = false
+          carte.animAoE = true;
+        }else{
+          carte.hp -= 4;
+          carte.degatsRecus = 4;
+          carte.animAoE = true;
+        }
+      });
+    },
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+    
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Kaz'Drok")) {
+            carte.atk += 4 + bonus;
+            carte.buffAtk += 4 + bonus;
+            carte.buffAtkBivalence += 4 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Kaz'Drok");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Kaz'Drok")) {
+            carte.atk -= 4 + bonus;
+            carte.buffAtk -= 4 + bonus;
+            carte.buffAtkBivalence -= 4 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Kaz'Drok");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+        
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Terrestre") {
+          if (carte.bivalenceTerrestreEffect && !carte.bivalenceSources.includes("Kaz'Drok")) {
+            carte.hp += 4 + bonus;
+            carte.buffHp += 4 + bonus;
+            carte.buffHpBivalence += 4 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Kaz'Drok");
+          }
+          if (!carte.bivalenceTerrestreEffect && carte.bivalenceSources.includes("Kaz'Drok")) {
+            carte.hp -= 4 + bonus;
+            carte.buffHp -= 4 + bonus;
+            carte.buffHpBivalence -= 4 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Kaz'Drok");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Kaz'Drok")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect) {
+            
+            carte.hp -= 1;
+            carte.buffHp -= 1;
+            carte.buffHpBivalence -= 1 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.atk -= 1;
+            carte.buffAtk -= 1;
+            carte.buffAtkBivalence -= 1 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Kaz'Drok");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 5,
+    nom: "Zog'Bar le Vent d'Acier",
+    lvl: 6,
+    hp: 5,
+    baseHp: 5,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card33.png",
+    imgMinia: "img/cardfight33.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Zog'Bar aussi inflige des dégats aux adv. adjacents. Aura Bivalente mer: +3 atk aux Croc-Noir. Aura Bivalente terre: +3 hp aux Croc-Noir.",
+    degatsAdj: true,
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Zog'Bar")) {
+            carte.atk += 3 + bonus;
+            carte.buffAtk += 3 + bonus;
+            carte.buffAtkBivalence += 3 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Zog'Bar");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Zog'Bar")) {
+            carte.atk -= 3 + bonus;
+            carte.buffAtk -= 3 + bonus;
+            carte.buffAtkBivalence -= 3 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Zog'Bar");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+        
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Terrestre") {
+          if (carte.bivalenceTerrestreEffect && !carte.bivalenceSources.includes("Zog'Bar")) {
+            carte.hp += 3 + bonus;
+            carte.buffHp += 3 + bonus;
+            carte.buffHpBivalence += 3 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Zog'Bar");
+          }
+          if (!carte.bivalenceTerrestreEffect && carte.bivalenceSources.includes("Zog'Bar")) {
+            carte.hp -= 3 + bonus;
+            carte.buffHp -= 3 + bonus;
+            carte.buffHpBivalence -= 3 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Zog'Bar");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Zog'Bar")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect) {
+            
+            carte.atk -= 3 + bonus;
+            carte.buffAtk -= 3 + bonus;
+            carte.buffAtkBivalence -= 3 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 3 + bonus;
+            carte.buffHp -= 3 + bonus;
+            carte.buffHpBivalence -= 3 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Zog'Bar");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 6,
+    nom: "Darka la Brise-Voiles",
+    lvl: 5,
+    hp: 6,
+    baseHp: 6,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card34.png",
+    imgMinia: "img/cardfight34.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Aura Bivalente mer: les Croc-Noir ont +4/+2. Bivalence Terre: les Croc-Noir ont +2/+4. Si Rok'gar ets présent, Darka gagne +4/+2",
+    effetDeCouple: {
+      partenaire: "Rok'gar Croc-des-Mers",
+      effetUnique: (carte) => {
+        carte.atk += 4;
+        carte.hp += 2;
+        carte.buffAtk += 4;
+        carte.buffHp += 2
+      },
+    },
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Darka")) {
+            carte.atk += 4 + bonus;
+            carte.buffAtk += 4 + bonus;
+            carte.buffAtkBivalence += 4 + bonus;
+            carte.hp += 2 + bonus;
+            carte.buffHp += 2 + bonus;
+            carte.buffHpBivalence += 2 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Darka");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Darka")) {
+            carte.atk -= 4 + bonus;
+            carte.buffAtk -= 4 + bonus;
+            carte.buffAtkBivalence -= 4 + bonus;
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Darka");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+        
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Terrestre") {
+          if (carte.bivalenceTerrestreEffect && !carte.bivalenceSources.includes("Darka")) {
+            carte.atk += 2 + bonus;
+            carte.buffAtk += 2 + bonus;
+            carte.buffAtkBivalence += 2 + bonus;
+            carte.hp += 4 + bonus;
+            carte.buffHp += 4 + bonus;
+            carte.buffHpBivalence += 4 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Darka");
+          }
+          if (!carte.bivalenceTerrestreEffect && carte.bivalenceSources.includes("Darka")) {
+            carte.atk -= 2 + bonus;
+            carte.buffAtk -= 2 + bonus;
+            carte.buffAtkBivalence -= 2 + bonus;
+            carte.hp -= 4 + bonus;
+            carte.buffHp -= 4 + bonus;
+            carte.buffHpBivalence -= 4 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Darka");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Darka")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect) {
+            
+            carte.atk -= 2 + bonus;
+            carte.buffAtk -= 2 + bonus;
+            carte.buffAtkBivalence -= 2 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Darka");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 7,
+    nom: "Grûm le Sculpteur de Crocs",
+    lvl: 5,
+    hp: 7,
+    baseHp: 7,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card35.png",
+    imgMinia: "img/cardfight35.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Quand un Croc-Noir meurs, les Croc-Noir gagne +1/+1. Bivalence mer: +1 atk supp. Bivalence terre: +1 hp supp.",
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if (mortCarte.famille !== "Croc-Noir" || mortCarte.id === self.id) return;
+      const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+      const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Croc-Noir" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;
+    
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+    
+      // Appliquer les buffs selon la bivalence
+      if (self.bivalenceMarinEffect) {
+        cible.atk += 2 + bonus;
+        cible.hp += 1 + bonus;
+        cible.buffAtk += 2 + bonus;
+        cible.buffHp += 1 + bonus;
+        cible.buffAtkGrum = (cible.buffAtkGrum || 0) + 2 + bonus;
+        cible.buffHpGrum = (cible.buffHpGrum || 0) + 1 + bonus;
+      } else if (self.bivalenceTerrestreEffect) {
+        cible.atk += 1 + bonus;
+        cible.hp += 2 + bonus;
+        cible.buffAtk += 1 + bonus;
+        cible.buffHp += 2 + bonus;
+        cible.buffAtkGrum = (cible.buffAtkGrum || 0) + 1 + bonus;
+        cible.buffHpGrum = (cible.buffHpGrum || 0) + 2 + bonus;
+      } else {
+        cible.atk += 1 + bonus;
+        cible.buffAtk += 1 + bonus;
+        cible.buffAtkGrum = (cible.buffAtkGrum || 0) + 1 + bonus;
+      }
+    
+      cible.grumBuffEffect = true; // Pour tracking ou affichage
+    }
+    
+  },
+
+  {
+    id: 8,
+    nom: "Brak'Na la Dompteuse d'Écaille",
+    lvl: 5,
+    hp: 4,
+    baseHp: 4,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card36.png",
+    imgMinia: "img/cardfight36.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: Invoque 'LE REQUIN' 4/4 avec réincarnation. Si Bivalence mer: LE REQUIN gagne +4/+4",
+    carteSpe: 30,
+    piocherCarteSpe: true,
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin" && carte.nom === "LE REQUIN") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Brak'Na")) {
+            carte.atk += 4 + bonus;
+            carte.buffAtk += 4 + bonus;
+            carte.buffAtkBivalence += 4 + bonus;
+            carte.hp += 4 + bonus;
+            carte.buffHp += 4 + bonus;
+            carte.buffHpBivalence += 4 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Brak'Na");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Brak'Na")) {
+            carte.atk -= 4 + bonus;
+            carte.buffAtk -= 4 + bonus;
+            carte.buffAtkBivalence -= 4 + bonus;
+            carte.hp -= 4 + bonus;
+            carte.buffHp -= 4 + bonus;
+            carte.buffHpBivalence -= 4 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Brak'Na");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Brak'Na")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect && carte.nom === "LE REQUIN") {
+            
+            carte.atk -= 4 + bonus;
+            carte.buffAtk -= 4 + bonus;
+            carte.buffAtkBivalence -= 4 + bonus;
+            carte.hp -= 4 + bonus;
+            carte.buffHp -= 4 + bonus;
+            carte.buffHpBivalence -= 4 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 0;
+            carte.buffHpBivalence -= 0;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Brak'Na");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+ 
+  {
+    id: 9,
+    nom: "Tor'Grag des Profondeurs",
+    lvl: 5,
+    hp: 4,
+    baseHp: 4,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card37.png",
+    imgMinia: "img/cardfight37.png",
+    imgMiniaProvoc: "img/cardfight37-provoc.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: Tor'Grag gagne +1/+1 pour chaque Croc-Noir présent sur le Board. Bivalence Mer: il gagne furie. Bivalence terre: il gagne provoc.",
+    provocation: true,
+    provocationUse: false,
+    furie: true,
+    furieUse: false,
+    effetDeMass: (carte, board) => {
+      const crocNoir = board.filter(c => c.famille === "Croc-Noir" && c.id !== carte.id);
+      if (crocNoir.length > 0) {
+        carte.atk += crocNoir.length;
+        carte.hp += crocNoir.length; 
+        carte.buffAtk += crocNoir.length;
+        carte.buffHp += crocNoir.length;
+      }     
+    },
+  },
+  {
+    id: 10,
+    nom: "Urgak la Ravageuse",
+    lvl: 5,
+    hp: 5,
+    baseHp: 5,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card38.png",
+    imgMinia: "img/cardfight38.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Cri: +3/+3 aux Croc-Noir sur le Board. Bivalence mer: +3 atk supp. Bivalence terre: +3hp supp",
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Croc-Noir"){
+          carte.atk += 3;
+          carte.buffAtk +=3;
+          carte.hp += 3;
+          carte.buffHp += 3;
+          if(carte.bivalenceMarinEffect){
+            carte.atk += 3;
+            carte.buffAtk +=3;
+          }else{
+            carte.hp += 3;
+            carte.buffHp += 3;
+          }
+        }
+      });
+    },
+
+  },
+  {
+    id: 11,
+    nom: "Vrak'Nul le Hurleur des Cimes",
+    lvl: 4,
+    hp: 4,
+    baseHp: 4,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card39.png",
+    imgMinia: "img/cardfight39.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Aoe général: Inflige 2 dégats a TOUT le monde. Aura Bivalente mer: +4 atk aux Croc-Noir. Aura Bivalente terre: +4 hp aux Croc-Noir",
+    degatsAdj: false,
+    furie: true,
+    furieUse: false,
+    aoeCible: (cartesBoardAdv) => {
+      cartesBoardAdv.forEach(carte => {
+        if(carte.bouclierUse){
+          carte.hp -= 0;
+          carte.degatsRecus = 0;
+          carte.bouclierUse = false
+          carte.animAoE = true;
+        }else{
+          carte.hp -= 2;
+          carte.degatsRecus = 2;
+          carte.animAoE = true;
+        }
+      });
+    },
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Vrak'Nul")) {
+            carte.atk += 4 + bonus;
+            carte.buffAtk += 4 + bonus;
+            carte.buffAtkBivalence += 4 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Vrak'Nul");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Vrak'Nul")) {
+            carte.atk -= 4 + bonus;
+            carte.buffAtk -= 4 + bonus;
+            carte.buffAtkBivalence -= 4 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Vrak'Nul");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Terrestre") {
+          if (carte.bivalenceTerrestreEffect && !carte.bivalenceSources.includes("Vrak'Nul")) {
+            carte.hp += 4 + bonus;
+            carte.buffHp += 4 + bonus;
+            carte.buffHpBivalence += 4 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Vrak'Nul");
+          }
+          if (!carte.bivalenceTerrestreEffect && carte.bivalenceSources.includes("Vrak'Nul")) {
+            carte.hp -= 4 + bonus;
+            carte.buffHp -= 4 + bonus;
+            carte.buffHpBivalence -= 4 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Vrak'Nul");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Vrak'Nul")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect) {
+            
+            carte.atk -= 1 + bonus;
+            carte.buffAtk -= 1 + bonus;
+            carte.buffAtkBivalence -= 1 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Vrak'Nul");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 12,
+    nom: "Ka'Rasha la Lieuse d'Esprits",
+    lvl: 4,
+    hp: 6,
+    baseHp: 6,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card40.png",
+    imgMinia: "img/cardfight40.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Aura: les effets Bivalents sont doublés. Aura bivalente mer: +2/+1 aux Croc-Noir. Aura bivalente terre: +1/+2 aux Croc-Noir",
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Ka'Rasha")) {
+            carte.atk += 2 + bonus;
+            carte.buffAtk += 2 + bonus;
+            carte.buffAtkBivalence += 2 + bonus;
+            carte.hp += 1 + bonus;
+            carte.buffHp += 1 + bonus;
+            carte.buffHpBivalence += 1 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Ka'Rasha");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Ka'Rasha")) {
+            carte.atk -= 2 + bonus;
+            carte.buffAtk -= 2 + bonus;
+            carte.buffAtkBivalence -= 2 + bonus;
+            carte.hp -= 1 + bonus;
+            carte.buffHp -= 1 + bonus;
+            carte.buffHpBivalence -= 1 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Ka'Rasha");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+        
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Terrestre") {
+          if (carte.bivalenceTerrestreEffect && !carte.bivalenceSources.includes("Ka'Rasha")) {
+            carte.hp += 2 + bonus;
+            carte.buffHp += 2 + bonus;
+            carte.buffHpBivalence += 2 + bonus;
+            carte.atk += 1 + bonus;
+            carte.buffAtk += 1 + bonus;
+            carte.buffAtkBivalence += 1 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Ka'Rasha");
+          }
+          if (!carte.bivalenceTerrestreEffect && carte.bivalenceSources.includes("Ka'Rasha")) {
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+            carte.atk -= 1 + bonus;
+            carte.buffAtk -= 1 + bonus;
+            carte.buffAtkBivalence -= 1 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Ka'Rasha");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Ka'Rasha")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect) {
+            
+            carte.atk -= 2 + bonus;
+            carte.buffAtk -= 2 + bonus;
+            carte.buffAtkBivalence -= 2 + bonus;
+            carte.hp -= 1 + bonus;
+            carte.buffHp -= 1 + bonus;
+            carte.buffHpBivalence -= 1 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+            carte.atk -= 1 + bonus;
+            carte.buffAtk -= 1 + bonus;
+            carte.buffAtkBivalence -= 1 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Ka'Rasha");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 13,
+    nom: "Gor’Tul le Fendeur d’Écailles",
+    lvl: 4,
+    hp: 5,
+    baseHp: 5,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card41.png",
+    imgMinia: "img/cardfight41.png",
+    imgProjectile: "img/projectile.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Début de combat: inflige 3 dégats à une cible aléatoire. Bivalence mer: 3 dégats supp. Bivalence terre: Gor’Tul à +3hp supp.",
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        if(carteSource.bivalenceMarinEffect){
+          carteCible.hp -= 6;
+        }else{
+          carteCible.hp -= 3;
+          carteSource.hp += 3;
+        }
+      }  
+    },
+  },
+  {
+    id: 14,
+    nom: "Na'Kra des Cendres Brûlantes",
+    lvl: 4,
+    hp: 4,
+    baseHp: 4,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card42.png",
+    imgMinia: "img/cardfight42.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Début de combat: inflige 2 dégats à tous le Board adv. Aura bivalente terre: les Croc-Noir ont +2hp",
+    aoeCible: (cartesBoardAdv) => {
+      cartesBoardAdv.forEach(carte => {
+        if(carte.bouclierUse){
+          carte.hp -= 0;
+          carte.degatsRecus = 0;
+          carte.bouclierUse = false
+          carte.animAoE = true;
+        }else{
+          carte.hp -= 2;
+          carte.degatsRecus = 2;
+          carte.animAoE = true;
+        }
+      });
+    },
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin") {
+          if (carte.bivalenceTerrestreEffect && !carte.bivalenceSources.includes("Na'Kra")) {
+            carte.hp += 2 + bonus;
+            carte.buffHp += 2 + bonus;
+            carte.buffHpBivalence += 2 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Na'Kra");
+          }
+          if (!carte.bivalenceTerrestreEffect && carte.bivalenceSources.includes("Na'Kra")) {
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Na'Kra");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Na'Kra")) {
+    
+          // Retrait des effets appliqués par cette source
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Na'Kra");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 15,
+    nom: "Sha'Rok, la pisteuse furtive",
+    lvl: 4,
+    hp: 5,
+    baseHp: 5,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card43.png",
+    imgMinia: "img/cardfight43.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: +2/+2 à un Croc-Noir aléatoire + Vous obtenez une carte Croc-Noir aléatoire de niveau inférieur à Sha'Rok",
+    piocherCarteInf: true,
+    criDeGuerreUnique: (carte) => {
+
+      carte.atk += 2;
+      carte.buffAtk +=2;
+      carte.hp += 2;
+      carte.buffHp += 2;
+      if(carte.bivalenceMarinEffect){
+        carte.atk += 1;
+        carte.buffAtk +=1;
+      }else{
+        carte.hp += 1;
+        carte.buffHp += 1;
+      }
+
+    },
+  },
+  {
+    id: 16,
+    nom: "Trok'Ma, l'Écumeur Grinçant",
+    lvl: 3,
+    hp: 4,
+    baseHp: 4,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card44.png",
+    imgMinia: "img/cardfight44.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: +2/+2 à un Croc-Noir aléatoire. Bivalence mer: +2 atk supp. Bivalence Terre: +2 hp supp.",
+    criDeGuerreUnique: (carte) => {
+
+      carte.atk += 2;
+      carte.buffAtk +=2;
+      carte.hp += 2;
+      carte.buffHp += 2;
+      if(carte.bivalenceMarinEffect){
+        carte.atk += 2;
+        carte.buffAtk += 2;
+      }else{
+        carte.hp += 2;
+        carte.buffHp += 2;
+      }
+
+    },
+  },
+  {
+    id: 17,
+    nom: "Muk'Zar la Ravineuse",
+    lvl: 3,
+    hp: 3,
+    baseHp: 3,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card45.png",
+    imgMinia: "img/cardfight45.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Cri: Muk'Zar gagne +1/+1 pour chaque Croc-Noir présent sur le Board. Bivalence Mer: +2 atk supp. Bivalence terre: +2 hp supp.",
+    effetDeMass: (carte, board) => {
+      const crocNoir = board.filter(c => c.famille === "Croc-Noir" && c.id !== carte.id);
+      if (crocNoir.length > 0) {
+        carte.atk += crocNoir.length;
+        carte.hp += crocNoir.length;
+        carte.buffAtk += crocNoir.length;
+        carte.buffHp += crocNoir.length;
+        if(carte.bivalenceTerrestreEffect){
+          carte.hp += 2;
+          carte.buffHp += 2;
+        }else{
+          carte.atk += 2;
+          carte.buffAtk += 2;
+        } 
+      }     
+    },
+  },
+  {
+    id: 18,
+    nom: "Zug'Rok le Dresseur de Crabes",
+    lvl: 4,
+    hp: 5,
+    baseHp: 5,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card46.png",
+    imgMinia: "img/cardfight46.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: Invoque 'Craby' 3/3 avec réincarnation. Si Bivalence mer: Craby gagne +2/+2",
+    carteSpe: 31,
+    piocherCarteSpe: true,
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin" && carte.nom === "Craby") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Zug'Rok")) {
+            carte.atk += 2 + bonus;
+            carte.BuffAtk += 2 + bonus;
+            carte.buffAtkBivalence += 2 + bonus;
+            carte.hp += 2 + bonus;
+            carte.buffHp += 2 + bonus;
+            carte.buffHpBivalence += 2 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Zug'Rok");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Zug'Rok")) {
+            carte.atk -= 2 + bonus;
+            carte.buffAtk -= 2 + bonus;
+            carte.buffAtkBivalence -= 2 + bonus;
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Zug'Rok");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Zug'Rok")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect && carte.nom === "Craby") {
+            
+            carte.atk -= 1 + bonus;
+            carte.buffAtk -= 1 + bonus;
+            carte.buffAtkBivalence -= 1 + bonus;
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 0;
+            carte.buffHpBivalence -= 0;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Zug'Rok");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 19,
+    nom: "Narka Brise-Roches",
+    lvl: 3,
+    hp: 5,
+    baseHp: 5,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card47.png",
+    imgMinia: "img/cardfight47.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Aura: Les Croc-Noir sur le Board gagne +1/+2. Bivalence mer: +2 atk supp. Bivalence Terre: +2 hp supp.",
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.famille === "Croc-Noir") {
+          carte.atk += 1;
+          carte.buffAtk += 1;
+          carte.hp += 2;
+          carte.buffHp += 2;
+          carte.auraEffect = true;
+        }
+        
+      });
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraEffect === true && carte.famille === "Croc-Noir") {
+          carte.atk -= 1;
+          carte.buffAtk -= 1;
+          carte.hp -= 2;
+          carte.buffHp -= 2;
+          if(carte.buffHp === 0 && carte.buffAtk === 0){
+            carte.auraEffect = false
+          }        
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.famille === "Croc-Noir") {
+        carte.atk += 1;
+        carte.buffAtk += 1;
+        carte.hp += 2;
+        carte.buffHp += 2;
+        carte.auraEffect = true; 
+      }     
+    },
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin"){
+          if(carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Narka")){
+            carte.atk += 2 + bonus;
+            carte.buffAtk += 2 + bonus;
+            carte.buffAtkBivalence += 2 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Narka");
+          }
+          if(!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Narka")){
+            carte.atk -= 2 + bonus;
+            carte.buffAtk -= 2 + bonus;
+            carte.buffAtkBivalence -= 2 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Narka");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false
+            }
+          }
+        }
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Terrestre"){
+          if(carte.bivalenceTerrestreEffect && !carte.bivalenceSources.includes("Narka")){
+            carte.hp += 2 + bonus;
+            carte.buffHp += 2 + bonus;
+            carte.buffHpBivalence += 2 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Narka");
+          }
+          if(!carte.bivalenceTerrestreEffect && carte.bivalenceSources.includes("Narka")){
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Narka");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false
+            }
+          }
+        }
+      })
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Narka")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect) {
+            carte.atk -= 2 + bonus;
+            carte.buffAtk -= 2 + bonus;
+            carte.buffAtkBivalence -= 2 + bonus;
+          }
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 2 + bonus;
+            carte.buffHp -= 2 + bonus;
+            carte.buffHpBivalence -= 2 + bonus;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Narka");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 20,
+    nom: "Ghar'Zûl l'Éclaireur Grondeur",
+    lvl: 3,
+    hp: 4,
+    baseHp: 4,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card48.png",
+    imgMinia: "img/cardfight48.png",
+    imgProjectile: "img/projectile.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Debut de Combat: Inflige 2 dégats à une cible aléatoire puis gagne 1hp. Bivalence mer: 1 dégat supp. Bivalence terre: +1 hp supp.",
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        if(carteSource.bivalenceMarinEffect){
+          carteCible.hp -= 3;
+          carteCible.degatsRecus = 3;
+          carteSource.hp += 1;
+        }else{
+          carteCible.hp -= 2;
+          carteCible.degatsRecus = 2;
+          carteSource.hp += 2;
+          carteSource.buffHp += 2;
+        }
+      }  
+    },
+  },
+  {
+    id: 21,
+    nom: "Krug le Moussaillon",
+    lvl: 2,
+    hp: 3,
+    baseHp: 3,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card49.png",
+    imgMinia: "img/cardfight49.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: +2 atk à un Croc-Noir aléatoire. Bivalence mer: +1 atk supp. Bivalence Terre: +1 hp supp.",
+    criDeGuerreUnique: (carte) => {
+      if(carte.famille === "Croc-Noir"){
+        carte.atk += 2;
+        carte.buffAtk +=2;
+        if(carte.bivalenceMarinEffect){
+          carte.atk += 1;
+          carte.buffAtk +=1;
+        }else{
+          carte.hp += 1;
+          carte.buffHp += 1;
+        }
+      }
+    },
+  },
+  {
+    id: 22,
+    nom: "Drozha l'essoreuse d'os",
+    lvl: 2,
+    hp: 2,
+    baseHp: 2,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card50.png",
+    imgMinia: "img/cardfight50.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Lorsqu'un Croc-Noir meurt, Drozha gagne +1 atk. Bivalance mer: +1 atk supp. Bivalence terre: + 1 hp supp.",
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if (mortCarte.famille !== "Croc-Noir" || mortCarte.id === self.id) return;
+      const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+      const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Croc-Noir" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;
+    
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+    
+      // Appliquer les buffs selon la bivalence
+      if (self.bivalenceMarinEffect) {
+        self.atk += 2 + bonus;
+        self.buffAtk += 2 + bonus;
+        self.buffAtkGrum = (self.buffAtkGrum || 0) + 2 + bonus;
+      } else if (self.bivalenceTerrestreEffect) {
+        self.atk += 1 + bonus;
+        self.buffAtk += 1 + bonus;
+        self.hp += 1 + bonus;
+        self.buffHp += 1 + bonus;
+        self.buffAtkGrum = (self.buffAtkGrum || 0) + 1 + bonus;
+        self.buffHpGrum = (self.buffHpGrum || 0) + 1 + bonus;
+      } else {
+        self.atk += 1 + bonus;
+        self.buffAtk += 1 + bonus;
+        self.buffAtkGrum = (self.buffAtkGrum || 0) + 1 + bonus;
+      }
+    
+      self.grumBuffEffect = true; // Pour tracking ou affichage
+    }
+  },
+  {
+    id: 23,
+    nom: "Zûn'Tul, le Mange-Racines",
+    lvl: 2,
+    hp: 5,
+    baseHp: 5,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card51.png",
+    imgMinia: "img/cardfight51.png",
+    imgMiniaProvoc: "img/cardfight51-provoc.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Aura: +1 hp aux Croc-Noir du Board. Bivalence mer: il gagne furie. Bivalence Terre: il gagne Provocation",
+    provocation: true,
+    provocationUse: false,
+    furie: true,
+    furieUse: false,
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.famille === "Croc-Noir") {
+          carte.hp += 1;
+          carte.buffHp += 1;
+          carte.auraEffect = true;
+        }
+      });
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraEffect === true && carte.famille === "Croc-Noir") {
+          carte.hp -= 1;
+          carte.buffHp -= 1;
+          if(carte.buffHp === 0 && carte.buffHp === 0){
+            carte.auraEffect = false
+          }        
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.famille === "Croc-Noir") {
+        carte.hp += 1;
+        carte.buffHp += 1;
+        carte.auraEffect = true; 
+      }     
+    }
+  },
+  {
+    id: 24,
+    nom: "Pok'Nar le Poissonneux",
+    lvl: 3,
+    hp: 3,
+    baseHp: 3,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card52.png",
+    imgMinia: "img/cardfight52.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: Invoque 'Le Gluant' 2/2 avec réincarnation. Aura Bivalente mer: Le gluant gagne +1/+1",
+    carteSpe: 32,
+    piocherCarteSpe: true,
+    bivalence: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) carte.bivalenceSources = [];
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        if (carte.famille === "Croc-Noir" && carte.sousFamille === "Marin" && carte.nom === "Le gluant") {
+          if (carte.bivalenceMarinEffect && !carte.bivalenceSources.includes("Pok'Nar")) {
+            carte.atk += 1 + bonus;
+            carte.buffAtk += 1 + bonus;
+            carte.buffAtkBivalence += 1 + bonus;
+            carte.hp += 1 + bonus;
+            carte.buffHp += 1 + bonus;
+            carte.buffHpBivalence += 1 + bonus;
+            carte.bivalenceEffect = true;
+            carte.bivalenceSources.push("Pok'Nar");
+          }
+          if (!carte.bivalenceMarinEffect && carte.bivalenceSources.includes("Pok'Nar")) {
+            carte.atk -= 1 + bonus;
+            carte.buffAtk += 1 + bonus;
+            carte.buffAtkBivalence -= 1 + bonus;
+            carte.hp -= 1 + bonus;
+            carte.buffHp -= 1 + bonus;
+            carte.buffHpBivalence -= 1 + bonus;
+            carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Pok'Nar");
+            if(carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0){
+              carte.bivalenceEffect = false;
+            }
+          }
+        }
+      });
+    },
+    bivalenceSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (!carte.bivalenceSources) return;
+        const karasha = cartesBoard.find(c => c.nom === "Ka'Rasha la Lieuse d'Esprits");
+        const bonus = karasha ? 1 : 0; // Ka'Rasha amplifie
+    
+        // Si la source est présente dans les effets appliqués
+        if (carte.bivalenceSources.includes("Pok'Nar")) {
+    
+          // Retrait des effets appliqués par cette source
+          if (carte.bivalenceMarinEffect && carte.nom === "Le gluant") {
+            
+            carte.atk -= 1 + bonus;
+            carte.buffAtkBivalence -= 1 + bonus;
+          }
+    
+          if (carte.bivalenceTerrestreEffect) {
+            carte.hp -= 0;
+            carte.buffHpBivalence -= 0;
+          }
+    
+          // Suppression de la source
+          carte.bivalenceSources = carte.bivalenceSources.filter(src => src !== "Pok'Nar");
+    
+          // Si plus aucun buff actif, on désactive le flag global
+          if (carte.buffHpBivalence === 0 && carte.buffAtkBivalence === 0) {
+            carte.bivalenceEffect = false;
+          }
+        }
+      });
+    },
+  },
+  {
+    id: 25,
+    nom: "Khash la Piquante",
+    lvl: 2,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card53.png",
+    imgMinia: "img/cardfight53.png",
+    imgProjectile: "img/projectile.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Debut de combat: inflige 1 dégat à une cible aléatoire. Bivalence Terre : inflige 1 dégat supplémentaire",
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        if(carteSource.bivalenceTerrestreEffect){
+          carteCible.hp -= 2;
+          carteCible.degatsRecus = 2;
+        }else{
+          carteCible.hp -= 1;
+          carteCible.degatsRecus = 1;
+        }
+      }  
+    },
+  },
+  {
+    id: 26,
+    nom: "Grik le Fangeux",
+    lvl: 1,
+    hp: 2,
+    baseHp: 2,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card54.png",
+    imgMinia: "img/cardfight54.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Si un Croc-Noir est présent sur le Board, Grik gagne +1 atk",
+    effetDeMass: (carte, board) => {
+      const crocNoir = board.filter(c => c.famille === "Croc-Noir" && c.id !== carte.id);
+      if (crocNoir.length > 0) {
+        carte.atk += 1; 
+        carte.buffAtk +=1;
+      }     
+    },
+  },
+  {
+    id: 27,
+    nom: "Krosh l’Écailleuse",
+    lvl: 1,
+    hp: 3,
+    baseHp: 3,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card55.png",
+    imgMinia: "img/cardfight55.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: +1 atk à un allié Croc-Noir aléatoire",
+    criDeGuerreUnique: (carte) => {
+      if(carte.famille === "Croc-Noir"){
+        carte.atk += 1;
+        carte.buffAtk +=1;
+      }  
+    },
+  },
+  {
+    id: 28,
+    nom: "Ur'Thok le Rampe-Sable",
+    lvl: 1,
+    hp: 1,
+    baseHp: 1,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card56.png",
+    imgMinia: "img/cardfight56.png",
+    imgProjectile: "img/projectile.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "Debut de combat: inflige 1 dégat à une cible aléatoire",
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        carteCible.hp -= 1; 
+        carteCible.degatsRecus = 1;
+      }
+    },
+  },
+  {
+    id: 29,
+    nom: "Drush la Poissonneuse",
+    lvl: 2,
+    hp: 2,
+    baseHp: 2,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card57.png",
+    imgMinia: "img/cardfight57.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Cri: Invoque un Poisson Gris 1/1 avec réincarnation",
+    carteSpe: 33,
+    piocherCarteSpe: true,
+  },
+  {
+    id: 30,
+    nom: "Bag'Kûl le Grogneur",
+    lvl: 1,
+    hp: 3,
+    baseHp: 3,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card58.png",
+    imgMinia: "img/cardfight58.png",
+    famille: "Croc-Noir",
+    sousFamille : "Terrestre",
+    texte: "GRUUAAAHHH ! Rien ne ce passe...",
+  },
+  {
+    id: 31,
+    nom: "LE REQUIN",
+    lvl: 7,
+    hp: 4,
+    baseHp: 4,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card59.png",
+    imgMinia: "img/cardfight59.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Reincarnation: revient 1x à la vie avec 1 hp",
+    reincarnation: true,
+  },
+  {
+    id: 32,
+    nom: "Craby",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card60.png",
+    imgMinia: "img/cardfight60.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Reincarnation: revient 1x à la vie avec 1 hp",
+    reincarnation: true,
+  },
+  {
+    id: 33,
+    nom: "Le gluant",
+    lvl: 7,
+    hp: 2,
+    baseHp: 2,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card61.png",
+    imgMinia: "img/cardfight61.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Reincarnation: revient 1x à la vie avec 1 hp",
+    reincarnation: true,
+  },
+  {
+    id: 34,
+    nom: "Poisson gris",
+    lvl: 7,
+    hp: 1,
+    baseHp: 1,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card62.png",
+    imgMinia: "img/cardfight62.png",
+    famille: "Croc-Noir",
+    sousFamille : "Marin",
+    texte: "Reincarnation: revient 1x à la vie avec 1 hp",
+    reincarnation: true,
+  },
+  {
+    id: 35,
+    nom: "Myrrh Reine des Voiles",
+    lvl: 6,
+    hp: 7,
+    baseHp: 7,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card63.png",
+    imgMinia: "img/cardfight63.png",
+    imgMiniaProvoc: "img/cardfight63-provoc.png",
+    imgMiniaBouclier: "img/cardfight63-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Cri: Donne Voile de lune à TOUT les Sylphariels. Aura: +4 hp aux Sylphariels possédant Voile de lune",
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Les Sylphariels" && carte.bouclierUse === false){
+          carte.bouclierUse = true
+        }
+      });
+    },
+    criDeGuerreUniqueSelf: (carte, board) => {
+      carte.bouclierUse = true  
+    },
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.famille === "Les Sylphariels" && carte.bouclierUse) {
+          carte.hp += 4;
+          carte.buffHp += 4;
+          carte.auraEffect = true;
+        }
+      });
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraEffect === true && carte.bouclierUse && carte.famille === "Les Sylphariels") {
+          carte.hp -= 4;
+          carte.buffHp -= 4;
+          if(carte.buffHp === 0 && carte.buffHp === 0){
+            carte.auraEffect = false
+          }        
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.famille === "Les Sylphariels" && carte.bouclierUse) {
+        carte.hp += 4;
+        carte.buffHp += 4;
+        carte.auraEffect = true; 
+      }     
+    },
+  },
+  {
+    id: 36,
+    nom: "Nythéa la Sorcière des Brumes",
+    lvl: 6,
+    hp: 4,
+    baseHp: 4,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card64.png",
+    imgMinia: "img/cardfight64.png",
+    imgMiniaProvoc: "img/cardfight64-provoc.png",
+    imgMiniaBouclier: "img/cardfight64-bouclier.png",
+    imgProjectile: "img/projectile3.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    bouclier: true,
+    bouclierUse: true,
+    texte: "Début de combat: Controle une carte adv aléatoire. Elle attaque 1 fois un allié adjacent. Donne +4 atk à chaque début de tour",
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      carteCible.control = true;
+    },
+    criDeGuerreUniqueSelf: (carte, board) => {
+      carte.bouclierUse = true  
+    },
+    aoeCibleApresCombat: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+          carte.atk += 4;
+          carte.buffAtk +=4;
+          carte.animAoE = true; 
+      });
+    },
+    
+  },
+  {
+    id: 37,
+    nom: "Arwyn des Mille Reflets",
+    lvl: 6,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card65.png",
+    imgMinia: "img/cardfight65.png",
+    imgMiniaProvoc: "img/cardfight65-provoc.png",
+    imgMiniaBouclier: "img/cardfight65-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Début de tour: Les Sylphariels présents sur le Board gagnent +4 hp",
+    aoeCibleApresCombat: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+          carte.hp += 4;
+          carte.buffHp += 4;
+          carte.animAoE = true; 
+      });
+    },
+  },
+  {
+    id: 38,
+    nom: "Tahl'Rin le Jugement Serein",
+    lvl: 6,
+    hp: 4,
+    baseHp: 4,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card66.png",
+    imgMinia: "img/cardfight66.png",
+    imgMiniaProvoc: "img/cardfight66-provoc.png",
+    imgMiniaBouclier: "img/cardfight66-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Cri et Evanescence mort: +4 atk aux Sylphariels présents sur le Board. Inflige aussi des dégats aux adversaires adjacents",
+    degatsAdj: true,
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Les Sylphariels"){
+          carte.atk += 4
+          carte.buffAtk +=4;
+        }
+      });
+    },
+    criDeGuerreUniqueSelf: (carte, board) => {
+      if(board.length === 0){
+        carte.atk += 4;
+        carte.buffAtk +=4;
+      }   
+    },
+    
+
+
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      ).sort((a, b) => a.hp - b.hp);
+    
+      if (cibles.length === 0) return;
+    
+      cibles.forEach(cible => {
+        // Appliquer les buffs
+        cible.atk += 4;
+        cible.buffAtk += 4;
+        cible.buffatkTahlRin = (cible.buffatkTahlRin || 0) + 4;
+
+        cible.tahlRinBuffEffect = true; // Pour tracking ou affichage
+
+      })
+    
+
+    },
+  },
+  {
+    id: 39,
+    nom: "Lúmena La Dernière Lueur",
+    lvl: 6,
+    hp: 6,
+    baseHp: 6,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card67.png",
+    imgMinia: "img/cardfight67.png",
+    imgMiniaProvoc: "img/cardfight67-provoc.png",
+    imgMiniaBouclier: "img/cardfight67-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Cri et Evanescence vente : +5 hp aux Sylphariels ayant Voile de lune",
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Les Sylphariels" && carte.bouclierUse){
+          carte.hp += 5
+          carte.buffHp += 5;
+        }
+      });
+    },
+    evanescence: (board) => {
+      board.forEach(carte => {
+        if(carte.famille === "Les Sylphariels" && carte.bouclierUse){
+          carte.atk += 5;
+          carte.buffAtk +=5;
+        }
+      });
+      const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+      if(vessalyn.length > 0){
+        board.forEach(carte => {
+          if(carte.famille === "Les Sylphariels" && carte.bouclierUse){
+            carte.atk += 5;
+            carte.buffAtk +=5;
+          }
+        });
+      }
+    },
+  },
+  {
+    id: 40,
+    nom: "Elyssia le Miroir de l'Éclat",
+    lvl: 5,
+    hp: 6,
+    baseHp: 6,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card68.png",
+    imgMinia: "img/cardfight68.png",
+    imgMiniaProvoc: "img/cardfight68-provoc.png",
+    imgMiniaBouclier: "img/cardfight68-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Cri et Evanescence vente : +2/+4 aux Sylphariels ayant Voile de lune",
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Les Sylphariels" && carte.bouclierUse){
+          carte.atk += 2;
+          carte.buffAtk +=2;
+          carte.hp += 4;
+          carte.buffHp += 4;
+        }
+      });
+    },
+    evanescence: (board) => {
+      board.forEach(carte => {
+        if(carte.famille === "Les Sylphariels" && carte.bouclierUse){
+          carte.atk += 2;
+          carte.buffAtk +=2;
+          carte.hp += 2;
+          carte.buffHp += 2;
+        }
+      });
+      const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+      if(vessalyn.length > 0){
+        board.forEach(carte => {
+          if(carte.famille === "Les Sylphariels" && carte.bouclierUse){
+            carte.atk += 2;
+            carte.buffAtk += 2;
+            carte.hp += 2;
+            carte.buffHp += 2;
+          }
+        });
+      }
+    },
+  },
+  {
+    id: 41,
+    nom: "Thalya des Courants Instables",
+    lvl: 5,
+    hp: 5,
+    baseHp: 5,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card69.png",
+    imgMinia: "img/cardfight69.png",
+    imgMiniaProvoc: "img/cardfight69-provoc.png",
+    imgMiniaBouclier: "img/cardfight69-bouclier.png",
+    imgProjectile: "img/projectile2.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Debut de combat: echange l'atk et les pv d'une carte adv aléatoire. Evanescence mort : +4 hp à la Sylphe ayant le moins de pv",
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        const hp = carteCible.hp
+        const atk = carteCible.atk
+        carteCible.hp = atk; 
+        carteCible.buffHp = atk; 
+        carteCible.atk = hp;
+        carteCible.buffAtk = hp;
+      }
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      ).sort((a, b) => a.hp - b.hp);
+    
+      if (cibles.length === 0) return;
+    
+      // Choisir une cible aléatoire
+      const cible = cibles[0];
+    
+      // Appliquer les buffs selon la bivalence
+      cible.hp += 4;
+      cible.buffHp += 4;
+      cible.buffHpThalya = (cible.buffHpThalya || 0) + 4;
+
+      cible.thalyaBuffEffect = true; // Pour tracking ou affichage
+    },
+  },
+  {
+    id: 42,
+    nom: "Virelys Porteuse de Lueurs",
+    lvl: 5,
+    hp: 4,
+    baseHp: 4,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card70.png",
+    imgMinia: "img/cardfight70.png",
+    imgMiniaProvoc: "img/cardfight70-provoc.png",
+    imgMiniaBouclier: "img/cardfight70-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "cri et Evanescence vente : vous obtenez une Lueur déferlante 6/8 avec Voile de lune et Provocation",
+    carteSpe: 65,
+    piocherCarteSpeApresVente: true,
+    piocherCarteSpe: true,
+    
+  },
+  {
+    id: 43,
+    nom: "Sillènne, l'Épine de Brume",
+    lvl: 5,
+    hp: 3,
+    baseHp: 3,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card71.png",
+    imgMinia: "img/cardfight71.png",
+    imgMiniaProvoc: "img/cardfight71-provoc.png",
+    imgMiniaBouclier: "img/cardfight71-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    texte: "Debut de combat: 4 dégats au Board adv. Vengeance: 4 dégats à son boureau. Evanescence mort: +2 atk au sylphe ayant le moins de pv",
+    aoeCible: (cartesBoardAdv) => {
+      cartesBoardAdv.forEach(carte => {
+        if(carte.bouclierUse){
+          carte.atk -= 0;
+          carte.degatsRecus = 0;
+          carte.bouclierUse = false
+          carte.animAoE = true;
+        }else{
+          carte.hp -= 4;
+          carte.degatsRecus = 4;
+          carte.animAoE = true;
+        }
+      });
+    },
+    oneTicPendantCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        carteCible.hp -= 4; 
+        carteCible.degatsRecus = 4;
+      }
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      ).sort((a, b) => a.atk - b.atk);
+    
+      if (cibles.length === 0) return;
+    
+      cibles.forEach(cible => {
+        // Appliquer les buffs
+        cible.atk += 2;
+        cible.buffAtk += 2;
+        cible.buffAtkSillenne = (cible.buffHpSillenne || 0) + 2;
+
+        cible.sillenneBuffEffect = true; // Pour tracking ou affichage
+
+      })
+    },
+  },
+  {
+    id: 44,
+    nom: "Méllua la Feuille Dansante",
+    lvl: 5,
+    hp: 7,
+    baseHp: 7,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card72.png",
+    imgMinia: "img/cardfight72.png",
+    imgMiniaProvoc: "img/cardfight72-provoc.png",
+    imgMiniaBouclier: "img/cardfight72-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Debut de tour: les Sylphariels ont +2 hp. Aura: +4 hp pour les Sylphariels tant que Méllua est présente sur le Board",
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.famille === "Les Sylphariels") {
+          carte.hp += 4;
+          carte.buffHp += 4;
+          carte.auraEffect = true;
+        }
+      });
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraEffect === true && carte.famille === "Les Sylphariels") {
+          carte.hp -= 4;
+          carte.buffHp -= 4;
+          if(carte.buffHp === 0 && carte.buffHp === 0){
+            carte.auraEffect = false
+          }        
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.famille === "Les Sylphariels") {
+        carte.hp += 4;
+        carte.buffHp += 4;
+        carte.auraEffect = true; 
+      }     
+    },
+    aoeCibleApresCombat: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+          carte.hp += 2;
+          carte.buffHp += 2;
+          carte.animAoE = true; 
+      });
+    },
+  },
+  {
+    id: 45,
+    nom: "Syra des Feuilles Troublées",
+    lvl: 4,
+    hp: 5,
+    baseHp: 5,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card73.png",
+    imgMinia: "img/cardfight73.png",
+    imgMiniaProvoc: "img/cardfight73-provoc.png",
+    imgMiniaBouclier: "img/cardfight73-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Cri et Evanescence (vente et mort) : Les Sylphariels du Board ont +1/+3",
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Les Sylphariels"){
+          carte.atk += 1;
+          carte.buffAtk +=1;
+          carte.hp += 3;
+          carte.buffHp += 3;
+        }
+
+      });
+    },
+    evanescence: (board) => {
+      board.forEach(carte => {
+        if(carte.famille === "Les Sylphariels"){
+          carte.atk += 1;
+          carte.buffAtk +=1;
+          carte.hp += 3;
+          carte.buffHp += 3;
+        }
+      });
+      const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+      if(vessalyn.length > 0){
+        board.forEach(carte => {
+          if(carte.famille === "Les Sylphariels"){
+            carte.atk += 1;
+            carte.buffAtk += 1;
+            carte.hp += 3;
+            carte.buffHp += 3;
+          }
+        });
+      }
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      ).sort((a, b) => a.hp - b.hp);
+    
+      if (cibles.length === 0) return;
+    
+      cibles.forEach(cible => {
+        // Appliquer les buffs
+        cible.atk += 1;
+        cible.buffAtk += 1;
+        cible.buffAtkSyra = (cible.buffHpSyra || 0) + 1;
+        cible.hp += 3;
+        cible.buffHp += 3;
+        cible.buffHpSyra = (cible.buffHpSyra || 0) + 3;
+
+        cible.syraBuffEffect = true; // Pour tracking ou affichage
+
+      })
+    },
+  },
+  {
+    id: 46,
+    nom: "Nym'Leth la Tisseuse d'Échos",
+    lvl: 4,
+    hp: 4,
+    baseHp: 4,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card74.png",
+    imgMinia: "img/cardfight74.png",
+    imgMiniaProvoc: "img/cardfight74-provoc.png",
+    imgMiniaBouclier: "img/cardfight74-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Evanescence (vente) : Obtient une carte Sylphariels aléatoire",
+    piocherCarteApresVente: true,
+  },
+  {
+    id: 47,
+    nom: "Ivrana, l'Onde Retenue",
+    lvl: 3,
+    hp: 3,
+    baseHp: 3,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card75.png",
+    imgMinia: "img/cardfight75.png",
+    imgMiniaProvoc: "img/cardfight75-provoc.png",
+    imgMiniaBouclier: "img/cardfight75-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Evanescence (vente) et aura : +2 hp à toutes les Sylphariels du Board",
+    evanescence: (board) => {
+      board.forEach(carte => {
+        if(carte.famille === "Les Sylphariels"){
+          carte.hp += 2;
+          carte.buffHp += 2;
+        }
+      });
+      const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+      if(vessalyn.length > 0){
+        board.forEach(carte => {
+          if(carte.famille === "Les Sylphariels"){
+            carte.hp += 2;
+            carte.buffHp += 2;
+          }
+        });
+      }
+    },
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.famille === "Les Sylphariels") {
+          carte.hp += 2;
+          carte.buffHp += 2;
+          carte.auraEffect = true;
+        }
+      });
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraEffect === true && carte.famille === "Les Sylphariels") {
+          carte.hp -= 2;
+          carte.buffHp -= 2;
+          if(carte.buffHp === 0 && carte.buffHp === 0){
+            carte.auraEffect = false
+          }        
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.famille === "Les Sylphariels") {
+        carte.hp += 2;
+        carte.buffHp += 2;
+        carte.auraEffect = true; 
+      }     
+    }
+  },
+  {
+    id: 48,
+    nom: "Liraël la Douteuse",
+    lvl: 4,
+    hp: 2,
+    baseHp: 2,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card76.png",
+    imgMinia: "img/cardfight76.png",
+    imgMiniaProvoc: "img/cardfight76-provoc.png",
+    imgMiniaBouclier: "img/cardfight76-bouclier.png",
+    imgProjectile: "img/projectile1.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    texte: "Cri: +4 atk pour toutes les fées du Board. Debut de combat: 2 dégats à une cible aléatoire. Vengeance: inflige 2 dégats à son boureau",
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Les Sylphariels"){
+          carte.atk += 4;
+          carte.buffAtk +=4;
+        }
+
+      });
+    },
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        carteCible.hp -= 2; 
+        carteCible.degatsRecus = 2;
+      }
+    },
+    oneTicPendantCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        carteCible.hp -= 2; 
+        carteCible.degatsRecus = 2;
+      }
+    },
+  },
+  {
+    id: 49,
+    nom: "Vessalyn, Chuchoteuse d''Ailes",
+    lvl: 4,
+    hp: 5,
+    baseHp: 5,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card77.png",
+    imgMinia: "img/cardfight77.png",
+    imgMiniaProvoc: "img/cardfight77-provoc.png",
+    imgMiniaBouclier: "img/cardfight77-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Tant que Vessalyn est sur le Board, les effets d'Evanescence sont doublé",
+  },
+  {
+    id: 50,
+    nom: "Naëlia des Brumes Tournoyantes",
+    lvl: 3,
+    hp: 4,
+    baseHp: 4,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card78.png",
+    imgMinia: "img/cardfight78.png",
+    imgMiniaProvoc: "img/cardfight78-provoc.png",
+    imgMiniaBouclier: "img/cardfight78-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "cri et evanescence (mort): pose voile de lune sur une fée aléatoire. aura: les fées avec voile de lune ont +1/+1.",
+    criDeGuerreUniqueBouclier: (cible) => {
+
+      cible.bouclier = true;
+      cible.bouclierUse = true;
+      cible.atk += 1;
+      cible.buffAtk += 1;
+      cible.hp += 1;
+      cible.buffHp += 1;
+
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;  
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+      cible.bouclier = true;
+      cible.bouclierUse = true;
+    },
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.bouclierUse) {
+          carte.atk += 1;
+          carte.buffAtk += 1;
+          carte.hp += 1;
+          carte.buffHp += 1;
+          carte.auraNaeliaEffect = true;
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.bouclierUse) {
+        carte.atk += 1;
+        carte.buffAtk += 1;
+        carte.hp += 1;
+        carte.buffHp += 1;
+        carte.auraNaeliaEffect = true; 
+      }     
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraNaeliaEffect === true && carte.famille === "Les Sylphariels") {
+          carte.atk -= 1;
+          carte.buffAtk -= 1;
+          carte.hp -= 1;
+          carte.buffHp -= 1;
+          if(carte.buffHp === 0 && carte.buffHp === 0){
+            carte.auraNaeliaEffect = false
+          }        
+        }
+      });
+    },
+  },
+  {
+    id: 51,
+    nom: "Elwyn la Souffleuse de brume",
+    lvl: 3,
+    hp: 2,
+    baseHp: 2,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card79.png",
+    imgMinia: "img/cardfight79.png",
+    imgMiniaProvoc: "img/cardfight79-provoc.png",
+    imgMiniaBouclier: "img/cardfight79-bouclier.png",
+    imgMiniaProvocBouclier: "img/cardfight79-provoc-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    texte: "Debut de tour: les fées sur le Board ont +1 atk. Evanescence: +2 atk à la fée ayant le moins d'atk (vente et mort)",
+    aoeCibleApresCombat: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+          carte.atk += 1;
+          carte.buffAtk += 1;
+          carte.animAoE = true; 
+      });
+    },
+    evanescence: (board, card) => {      
+      if(board.length > 1 ){
+        const copies = board.filter(c => c.id !== card.id).filter(c => c.famille === "Les Sylphariels").sort((a, b) => a.atk - b.atk)
+        let cible = copies[0]
+        if(cible.famille === "Les Sylphariels"){
+          cible.atk += 2;
+          cible.buffAtk += 1;
+        }
+        const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+        if(vessalyn.length > 0){
+          cible.atk += 2;
+          cible.buffAtk += 1;
+        }
+      } 
+    }, 
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      ).sort((a, b) => a.atk - b.atk);
+    
+      if (cibles.length === 0) return;
+    
+      // Choisir une cible aléatoire
+      const cible = cibles[0];
+    
+      // Appliquer les buffs selon la bivalence
+      cible.atk += 2;
+      cible.buffAtk += 2;
+      cible.buffAtkElwyn = (cible.buffAtkElwyn || 0) + 2;
+
+      cible.elwynBuffEffect = true; // Pour tracking ou affichage
+    },
+  },
+  {
+    id: 52,
+    nom: "Vyntha Voix de la Canopée",
+    lvl: 3,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card80.png",
+    imgMinia: "img/cardfight80.png",
+    imgMiniaProvoc: "img/cardfight80-provoc.png",
+    imgMiniaBouclier: "img/cardfight80-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Cri: obtient une Lueur dansante 0/2. Aura: +2/+2 pour l'invocation",
+    carteSpe: 64,
+    piocherCarteSpe: true,
+    aura: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.nom === "Lueur dansante") {
+          carte.atk += 2;
+          carte.buffAtk += 2;
+          carte.hp += 2;
+          carte.buffHp += 2;
+          carte.auraVynthaEffect = true;
+        }
+      });
+    },
+    auraUnique: (carte) => {
+      if (carte.nom === "Lueur dansante") {
+        carte.atk += 2;
+        carte.buffAtk += 2;
+        carte.hp += 2;
+        carte.buffHp += 2;
+        carte.auraVynthaEffect = true; 
+      }     
+    },
+    auraSell: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if (carte.auraVynthaEffect === true && carte.famille === "Les Sylphariels") {
+          carte.atk -= 2;
+          carte.buffAtk -= 2;
+          carte.hp -= 2;
+          carte.buffHp -= 2;
+          if(carte.buffHp === 0 && carte.buffHp === 0){
+            carte.auraVynthaEffect = false
+          }        
+        }
+      });
+    },
+  },
+  {
+    id: 53,
+    nom: "Nyssa l'Épine de Rosée",
+    lvl: 3,
+    hp: 2,
+    baseHp: 2,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card81.png",
+    imgMinia: "img/cardfight81.png",
+    imgMiniaProvoc: "img/cardfight81-provoc.png",
+    imgMiniaBouclier: "img/cardfight81-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    texte: "Debut de combat: 1 dégat au Board adv. Evanescence: +2 atk à toutes les fées (vente et mort)",
+    oneTicCible:  true,
+    aoeCible: (cartesBoardAdv) => {
+      cartesBoardAdv.forEach(carte => {
+        if(carte.bouclierUse){
+          carte.atk -= 0;
+          carte.degatsRecus = 0;
+          carte.bouclierUse = false
+          carte.animAoE = true;
+        }else{
+          carte.hp -= 1;
+          carte.degatsRecus = 1;
+          carte.animAoE = true;
+        }
+      });
+    },
+    evanescence: (board) => {
+      board.forEach(carte => {
+        if(carte.famille === "Les Sylphariels"){
+          carte.atk += 2;
+          carte.buffAtk += 2;
+        }
+      });
+      const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+      if(vessalyn.length > 0){
+        board.forEach(carte => {
+          if(carte.famille === "Les Sylphariels"){
+            carte.atk += 2;
+            carte.buffAtk += 2;
+          }
+        });
+      }
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      ).sort((a, b) => a.atk - b.atk);
+    
+      if (cibles.length === 0) return;
+    
+      // Choisir une cible aléatoire
+      const cible = cibles[0];
+    
+      // Appliquer les buffs selon la bivalence
+      cible.atk += 2;
+      cible.buffAtk += 1;
+      cible.buffAtkNyssa = (cible.buffAtkNyssa || 0) + 2;
+
+      cible.nyssaBuffEffect = true; // Pour tracking ou affichage
+    }
+  },
+  {
+    id: 54,
+    nom: "Sylène la Faiblissante",
+    lvl: 3,
+    hp: 4,
+    baseHp: 4,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card82.png",
+    imgMinia: "img/cardfight82.png",
+    imgMiniaProvoc: "img/cardfight82-provoc.png",
+    imgMiniaBouclier: "img/cardfight82-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    texte: "Debut de combat: réduit de 1 l'atk du board adv. Evanescence: +1atk aux fées (vente/mort)",
+    aoeCible: (cartesBoardAdv) => {
+      cartesBoardAdv.forEach(carte => {
+        if(carte.bouclierUse){
+          carte.atk -= 0;
+          carte.degatsRecus = 0;
+          carte.bouclierUse = false
+          carte.animAoE = true;
+        }else{
+          carte.atk -= 1;
+          carte.degatsRecus = 1;
+          carte.animAoE = true;
+        }
+      });
+    },
+    evanescence: (board) => {
+      board.forEach(carte => {
+        if(carte.famille === "Les Sylphariels"){
+          carte.atk += 1;
+          carte.buffAtk += 1;
+        }
+      });
+      const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+      if(vessalyn.length > 0){
+        board.forEach(carte => {
+          if(carte.famille === "Les Sylphariels"){
+            carte.atk += 1;
+            carte.buffAtk += 1;
+          }
+        });
+      }
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;
+    
+      // Choisir une cible aléatoire
+      
+      cibles.forEach(carte => {
+        carte.atk += 1
+        carte.buffAtk += 1;
+        carte.buffAtkSylene = (carte.buffAtkSylene || 0) + 1;
+        carte.syleneBuffEffect = true; // Pour tracking ou affichage
+      })
+    }
+  },
+  {
+    id: 55,
+    nom: "Fylia l'Évanouie",
+    lvl: 2,
+    hp: 3,
+    baseHp: 3,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card83.png",
+    imgMinia: "img/cardfight83.png",
+    imgMiniaProvoc: "img/cardfight83-provoc.png",
+    imgMiniaBouclier: "img/cardfight83-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    texte: "Evanescence: confère +2atk à une fée aléatoire (vente/mort)",
+    evanescence: (board, card) => {      
+      if(board.length > 1 ){
+        const copies = board.filter(c => c.id !== card.id).filter(c => c.famille === "Les Sylphariels")
+        if(copies.length > 0){
+          let random = copies[Math.floor(Math.random() * copies.length)]
+          if(random.famille === "Les Sylphariels"){
+            random.atk += 2;
+            random.buffAtk += 2;
+          }
+          const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+          const copies1 = copies.filter(c => c.nom !== random.nom)
+          if(copies1.length > 0){
+            let random1 = copies[Math.floor(Math.random() * copies.length)]
+            if(vessalyn.length > 0){
+              random1.atk += 2;
+              random1.buffAtk += 2;
+            }
+  
+          }
+        }
+
+
+      } 
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;  
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+      cible.atk += 2;
+      cible.buffAtk += 2;
+      cible.buffAtkFylia = (cible.buffAtkFylia || 0) + 2;
+      cible.fyliaBuffEffect = true; // Pour tracking ou affichage
+    },
+  },
+  {
+    id: 56,
+    nom: "Silyne des Lueurs Tardives",
+    lvl: 2,
+    hp: 4,
+    baseHp: 4,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card84.png",
+    imgMinia: "img/cardfight84.png",
+    imgMiniaProvoc: "img/cardfight84-provoc.png",
+    imgMiniaBouclier: "img/cardfight84-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Cri: +1hp aux fées sur le Board. Evanescence: +1hp à 1 fée (vente/mort)",
+    criDeGuerre: (cartesBoard) => {
+      cartesBoard.forEach(carte => {
+        if(carte.famille === "Les Sylphariels"){
+          carte.hp += 1;
+          carte.buffHp += 1;
+        }
+
+      });
+    },
+    evanescence: (board, card) => {      
+      if(board.length > 1 ){
+        const copies = board.filter(c => c.id !== card.id).filter(c => c.famille === "Les Sylphariels")
+        if(copies.length > 0){
+          let random = copies[Math.floor(Math.random() * copies.length)]
+          if(random.famille === "Les Sylphariels"){
+            random.hp += 1;
+            random.buffHp += 1;
+          }
+          const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+          const copies1 = copies.filter(c => c.nom !== random.nom)
+          if(copies1.length > 0){
+            let random1 = copies[Math.floor(Math.random() * copies.length)]
+            if(vessalyn.length > 0){
+              random1.hp += 1;
+              random1.buffHp += 1;
+            }
+  
+          }
+        }
+      } 
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;  
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+      cible.hp += 1;
+      cible.buffHp += 1;
+      cible.buffHpSilyne = (cible.buffHpSilyne || 0) + 1;
+      cible.silyneBuffEffect = true; // Pour tracking ou affichage
+    },
+
+  },
+  {
+    id: 57,
+    nom: "Veya l'Inaperçue",
+    lvl: 1,
+    hp: 2,
+    baseHp: 2,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card85.png",
+    imgMinia: "img/cardfight85.png",
+    imgMiniaProvoc: "img/cardfight85-provoc.png",
+    imgMiniaBouclier: "img/cardfight85-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Si Veya est posée sur un Board vide, gagne +2 atk. Ce vend 1po supp.",
+    gainOr: 1,
+    criDeGuerreUniqueSelf: (carte, board) => {
+      if(board.length === 0){
+        carte.atk += 2;
+        carte.buffAtk +=2;
+      }   
+    },
+    
+  },
+  {
+    id: 58,
+    nom: "Linn d'Écorce Douce",
+    lvl: 2,
+    hp: 5,
+    baseHp: 5,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card86.png",
+    imgMinia: "img/cardfight86.png",
+    imgMiniaProvoc: "img/cardfight86-provoc.png",
+    imgMiniaBouclier: "img/cardfight86-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Evanescence : confère Voile de lune à une fée aléatoire (vente et mort)",
+    evanescence: (board, card) => {      
+      if(board.length > 1 ){
+        const copies = board.filter(c => c.id !== card.id).filter(c => c.famille === "Les Sylphariels")
+        if(copies.length > 0){
+          let random = copies[Math.floor(Math.random() * copies.length)]
+          if(random.famille === "Les Sylphariels"){
+            random.bouclier = true;
+            random.bouclierUse = true;
+          }
+          const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+          const copies1 = copies.filter(c => c.nom !== random.nom)
+          if(copies1.length > 0){
+            let random1 = copies[Math.floor(Math.random() * copies.length)]
+            if(vessalyn.length > 0){
+              random1.bouclier = true;
+              random1.bouclierUse = true;
+            }
+  
+          }
+        }
+
+      } 
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;  
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+      cible.bouclier = true;
+      cible.bouclierUse = true;
+    },
+  },
+  {
+    id: 59,
+    nom: "Elra la Clignotante",
+    lvl: 2,
+    hp: 2,
+    baseHp: 2,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card87.png",
+    imgMinia: "img/cardfight87.png",
+    imgMiniaProvoc: "img/cardfight87-provoc.png",
+    imgMiniaBouclier: "img/cardfight87-bouclier.png",
+    imgProjectile: "img/projectile2.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Debut de combat : 1 dégat aléatoire. Evanescence : 1 atk fée dark ou 1 hp fée light",
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      if(carteCible.bouclierUse){
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+        carteCible.bouclierUse = false
+      }else{
+        carteCible.hp -= 1; 
+        carteCible.degatsRecus = 1;
+      }
+
+  },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;
+    
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+    
+      // Appliquer les buffs selon la bivalence
+      if (cible.sousFamille === "Dark") {
+        cible.atk += 1;
+        cible.buffAtk += 1;
+        cible.buffAtkElra = (cible.buffAtkElra || 0) + 1;
+      } else if (cible.sousFamille === "Light") {
+        cible.hp += 1;
+        cible.buffHp += 1;
+        cible.buffHpElra = (cible.buffHpElra || 0) + 1;
+      }
+    
+      cible.elraBuffEffect = true; // Pour tracking ou affichage
+    },
+    
+  },
+  {
+    id: 60,
+    nom: "Fypi la Perdue",
+    lvl: 1,
+    hp: 3,
+    baseHp: 3,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card88.png",
+    imgMinia: "img/cardfight88.png",
+    imgMiniaProvoc: "img/cardfight88-provoc.png",
+    imgMiniaBouclier: "img/cardfight88-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Evanescence : donne +1 hp à une fée aléatoire (vente et mort)",
+    evanescence: (board, card) => {      
+      if(board.length > 1 ){
+        const copies = board.filter(c => c.id !== card.id).filter(c => c.famille === "Les Sylphariels")
+        if(copies.length > 0){
+          let random = copies[Math.floor(Math.random() * copies.length)]
+          if(random.famille === "Les Sylphariels"){
+            random.hp += 1;
+            random.buffHp += 1;
+          }
+          const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+          const copies1 = copies.filter(c => c.nom !== random.nom)
+          if(copies1.length > 0){
+            let random1 = copies[Math.floor(Math.random() * copies.length)]
+            if(vessalyn.length > 0){
+              random1.hp += 1
+              random1.buffHp += 1;
+            }
+  
+          }
+        }
+      } 
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;  
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+      cible.hp += 1;
+      cible.buffHp += 1;
+      cible.buffHpFypi = (cible.buffHpFypi || 0) + 1;
+      cible.fypiBuffEffect = true; // Pour tracking ou affichage
+    },
+  },
+  {
+    id: 61,
+    nom: "Louli des Lanternes",
+    lvl: 1,
+    hp: 4,
+    baseHp: 4,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card89.png",
+    imgMinia: "img/cardfight89.png",
+    imgMiniaProvoc: "img/cardfight89-provoc.png",
+    imgMiniaBouclier: "img/cardfight89-bouclier.png",
+    imgMiniaProvocBouclier: "img/cardfight89-provoc-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Evanescence : obtient une Lueur dansante 0/2 avec provocation (vente)",
+    carteSpe: 64,
+    piocherCarteSpeApresVente: true,
+  },
+  {
+    id: 62,
+    nom: "Fiffa la Trébuchante",
+    lvl: 1,
+    hp: 2,
+    baseHp: 2,
+    atk: 2,
+    atkDispo: false,
+    img: "img/card90.png",
+    imgMinia: "img/cardfight90.png",
+    imgMiniaProvoc: "img/cardfight90-provoc.png",
+    imgMiniaBouclier: "img/cardfight90-bouclier.png",
+    imgProjectile: "img/projectile2.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "Debut de combat : 1 chance sur 3 de faire 1 dégat à une cible aléatoire",
+    oneTicDebutCombat: (carteCible, carteSource) => {
+      let unSurTrois = Math.floor(Math.random() * 3)
+      if(unSurTrois === 0){
+        if(carteCible.bouclierUse){
+          carteCible.hp -= 0;
+          carteCible.degatsRecus = 0;
+          carteCible.bouclierUse = false
+        }else{
+          carteCible.hp -= 1;
+          carteCible.degatsRecus = 1;
+        }
+      }else{
+        carteCible.hp -= 0;
+        carteCible.degatsRecus = 0;
+      }  
+    },
+  },
+  {
+    id: 63,
+    nom: "Clélie l'Oubliée",
+    lvl: 1,
+    hp: 1,
+    baseHp: 1,
+    atk: 1,
+    atkDispo: false,
+    img: "img/card91.png",
+    imgMinia: "img/cardfight91.png",
+    imgMiniaProvoc: "img/cardfight91-provoc.png",
+    imgMiniaBouclier: "img/cardfight91-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    texte: "Evanescence : ce vend 1po supplémentaire",
+    gainOr: 1,
+  },
+  {
+    id: 64,
+    nom: "Zilla la Grincheuse",
+    lvl: 1,
+    hp: 1,
+    baseHp: 1,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card92.png",
+    imgMinia: "img/cardfight92.png",
+    imgMiniaProvoc: "img/cardfight92-provoc.png",
+    imgMiniaBouclier: "img/cardfight92-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Dark",
+    texte: "Evanescence : donne +1 atk à une fée aléatoire (vente et mort)",
+    evanescence: (board, card) => {      
+      if(board.length > 1 ){
+        const copies = board.filter(c => c.id !== card.id).filter(c => c.famille === "Les Sylphariels") 
+        if(copies.length > 0){
+          let random = copies[Math.floor(Math.random() * copies.length)]
+          if(random.famille === "Les Sylphariels"){
+            random.atk += 1;
+            random.buffAtk +=1;
+          }
+          const vessalyn = board.filter(c => c.nom === "Vessalyn, Chuchoteuse d''Ailes")
+          const copies1 = copies.filter(c => c.nom !== random.nom)
+          if(copies1.length > 0){
+            let random1 = copies[Math.floor(Math.random() * copies.length)]
+            if(vessalyn.length > 0){
+              random1.atk += 1;
+              random1.buffAtk +=1;
+            }
+          }
+        }
+      } 
+    },
+    deathTrigger: (mortCarte, cartesBoard, self) => {
+      // Ne rien faire si la carte morte n’est pas Croc-Noir ou si elle est Grûm lui-même
+      if ( mortCarte.id !== self.id) return;
+    
+      // Cherche les cibles valides (autres Croc-Noir vivants, excluant Grûm et la carte morte)
+      const cibles = cartesBoard.filter(c =>
+        c.famille === "Les Sylphariels" &&
+        c.id !== self.id &&
+        c.id !== mortCarte.id &&
+        c.hp > 0
+      );
+    
+      if (cibles.length === 0) return;  
+      // Choisir une cible aléatoire
+      const cible = cibles[Math.floor(Math.random() * cibles.length)];
+      cible.atk += 1;
+      cible.buffAtk +=1;
+      cible.buffAtkZilla = (cible.buffAtkZilla || 0) + 1;
+      cible.zillaBuffEffect = true; // Pour tracking ou affichage
+    },
+  },
+  {
+    id: 65,
+    nom: "Lueur dansante",
+    lvl: 7,
+    hp: 2,
+    baseHp: 2,
+    atk: 0,
+    atkDispo: false,
+    img: "img/card93.png",
+    imgMinia: "img/cardfight93.png",
+    imgMiniaProvoc: "img/cardfight93-provoc.png",
+    imgMiniaBouclier: "img/cardfight93-bouclier.png",
+    imgMiniaProvocBouclier: "img/cardfight93-provoc-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "",
+    provocation: true,
+    provocationUse: true,
+  },
+  {
+    id: 66,
+    nom: "Lueur déferlante",
+    lvl: 7,
+    hp: 8,
+    baseHp: 8,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card93.png",
+    imgMinia: "img/cardfight93.png",
+    imgMiniaProvoc: "img/cardfight93-provoc.png",
+    imgMiniaBouclier: "img/cardfight93-bouclier.png",
+    imgMiniaProvocBouclier: "img/cardfight93-provoc-bouclier.png",
+    famille: "Les Sylphariels",
+    sousFamille : "Light",
+    texte: "*",
+    provocation: true,
+    provocationUse: true,
+    bouclier: true,
+    bouclierUse: true,
+  },
+  {
+    id: 67,
+    nom: "Habitant des dunes",
+    lvl: 1,
+    hp: 2,
+    baseHp: 2,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card94.png",
+    imgMinia: "img/cardfight94.png",
+    famille: "Elementaire",
+    texte: "*",
+    criDeGuerreTaverne: (shopCards, bonusTourbillonDeSable, bonusAtkElem) => {
+      shopCards.forEach(carte => {
+        if(carte.famille === "Elementaire"){
+          carte.atk += 1 + bonusAtkElem;
+          carte.buffAtk += 1 + bonusAtkElem;
+          carte.hp += 1 + bonusTourbillonDeSable;
+        }
+      });
+      cards.forEach(carte =>{
+        if(carte.famille === "Elementaire"){
+          carte.baseAtk = carte.atk
+          carte.atk += 1 + bonusAtkElem;
+          carte.buffAtk += 1 + bonusAtkElem;
+          carte.hp += 1 + bonusTourbillonDeSable;
+        }
+      })
+    }
+  },
+  {
+    id: 68,
+    nom: "Roche en fusion",
+    lvl: 1,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card95.png",
+    imgMinia: "img/cardfight95.png",
+    famille: "Elementaire",
+    texte: "*",
+    upSelf: true,
+  },
+  {
+    id: 69,
+    nom: "Cyclone crépitant",
+    lvl: 2,
+    hp: 1,
+    baseHp: 1,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card96.png",
+    imgMinia: "img/cardfight96.png",
+    imgMiniaBouclier: "img/cardfight96-bouclier.png",
+    famille: "Elementaire",
+    texte: "*",
+    bouclier: true,
+    bouclierUse: true,
+    furie: true,
+    furieUse: true,
+  },
+  {
+    id: 70,
+    nom: "Elemenplus",
+    lvl: 2,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card97.png",
+    imgMinia: "img/cardfight97.png",
+    famille: "Elementaire",
+    texte: "*",
+    carteSpe: 90,
+    piocherCarteSpeApresVente: true,
+  },
+  {
+    id: 71,
+    nom: "Elementaire de fête",
+    lvl: 2,
+    hp: 2,
+    baseHp: 2,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card98.png",
+    imgMinia: "img/cardfight98.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 72,
+    nom: "Pirate d'eau douce",
+    lvl: 3,
+    hp: 5,
+    baseHp: 5,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card99.png",
+    imgMinia: "img/cardfight99.png",
+    famille: "Elementaire",
+    texte: "*",
+    gainOr: 1,
+  },
+  {
+    id: 73,
+    nom: "Roche mère bienfaisante",
+    lvl: 3,
+    hp: 4,
+    baseHp: 4,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card100.png",
+    imgMinia: "img/cardfight100.png",
+    famille: "Elementaire",
+    texte: "*",
+    decomptePioche: 2,
+  },
+  {
+    id: 74,
+    nom: "Tourbillon de sable",
+    lvl: 3,
+    hp: 3,
+    baseHp: 3,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card101.png",
+    imgMinia: "img/cardfight101.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 75,
+    nom: "Elementaire du feu de brousse",
+    lvl: 3,
+    hp: 3,
+    baseHp: 3,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card102.png",
+    imgMinia: "img/cardfight102.png",
+    famille: "Elementaire",
+    texte: "*",
+    degatsAdj: true,
+  },
+  {
+    id: 76,
+    nom: "Elementaire gangrené",
+    lvl: 3,
+    hp: 3,
+    baseHp: 3,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card103.png",
+    imgMinia: "img/cardfight103.png",
+    famille: "Elementaire",
+    texte: "*",
+    criDeGuerreTaverne: (shopCards, bonusTourbillonDeSable, bonusAtkElem) => {
+      shopCards.forEach(carte => {
+        if(carte.famille === "Elementaire"){
+          carte.atk += 1 + bonusAtkElem;
+          carte.buffAtk += 1 + bonusAtkElem;
+          carte.hp += 1 + bonusTourbillonDeSable;
+        }
+      });
+      cards.forEach(carte =>{
+        if(carte.famille === "Elementaire"){
+          carte.baseAtk = carte.atk
+          carte.atk += 1 + bonusAtkElem;
+          carte.buffAtk += 1 + bonusAtkElem;
+          carte.hp += 1 + bonusTourbillonDeSable;
+        }
+      })
+    }
+  },
+  {
+    id: 77,
+    nom: "Anomalie actualisante",
+    lvl: 4,
+    hp: 5,
+    baseHp: 5,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card104.png",
+    imgMinia: "img/cardfight104.png",
+    famille: "Elementaire",
+    texte: "*",
+    gainOr: 2,
+  },
+  {
+    id: 78,
+    nom: "Fracasseur de météorites",
+    lvl: 4,
+    hp: 6,
+    baseHp: 6,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card105.png",
+    imgMinia: "img/cardfight105.png",
+    famille: "Elementaire",
+    texte: "*",
+    upSelf: true,
+  },
+  {
+    id: 79,
+    nom: "Incandescence de braise",
+    lvl: 4,
+    hp: 2,
+    baseHp: 2,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card106.png",
+    imgMinia: "img/cardfight106.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 80,
+    nom: "Oleiflamme flamboyant",
+    lvl: 4,
+    hp: 4,
+    baseHp: 4,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card107.png",
+    imgMinia: "img/cardfight107.png",
+    famille: "Elementaire",
+    texte: "*",
+    criDeGuerreTaverne: (shopCards, bonusTourbillonDeSable, bonusAtkElem) => {
+      shopCards.forEach(carte => {
+        if(carte.famille === "Elementaire"){
+          carte.atk += 3 + bonusAtkElem;
+          carte.buffAtk += 3 + bonusAtkElem;
+          carte.hp += 2 + bonusTourbillonDeSable;
+        }
+      });
+      cards.forEach(carte =>{
+        if(carte.famille === "Elementaire"){
+          carte.baseAtk = carte.atk
+          carte.atk += 3 + bonusAtkElem;
+          carte.buffAtk += 3 + bonusAtkElem;
+          carte.hp += 2 + bonusTourbillonDeSable;
+        }
+      })
+    }
+  },
+  {
+    id: 81,
+    nom: "Tornade décuplée",
+    lvl: 4,
+    hp: 4,
+    baseHp: 4,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card108.png",
+    imgMinia: "img/cardfight108.png",
+    famille: "Elementaire",
+    texte: "*",
+    piocherCarteFamille: false,
+  },
+  {
+    id: 82,
+    nom: "Lokholar le Forgegivre",
+    lvl: 5,
+    hp: 5,
+    baseHp: 5,
+    atk: 7,
+    atkDispo: false,
+    img: "img/card109.png",
+    imgMinia: "img/cardfight109.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 83,
+    nom: "Souffle-grange dansant",
+    lvl: 5,
+    hp: 4,
+    baseHp: 4,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card110.png",
+    imgMinia: "img/cardfight110.png",
+    famille: "Elementaire",
+    texte: "*",
+    criDeGuerreTaverne: (shopCards, bonusTourbillonDeSable, bonusAtkElem) => {
+      shopCards.forEach(carte => {
+        if(carte.famille === "Elementaire"){
+          carte.atk += 2 + bonusAtkElem;
+          carte.buffAtk += 2 + bonusAtkElem;
+          carte.hp += 2 + bonusTourbillonDeSable;
+        }
+      });
+      cards.forEach(carte =>{
+        if(carte.famille === "Elementaire"){
+          carte.baseAtk = carte.atk
+          carte.atk += 2 + bonusAtkElem;
+          carte.buffAtk += 2 + bonusAtkElem;
+          carte.hp += 2 + bonusTourbillonDeSable;
+        }
+      })
+    }
+  },
+  {
+    id: 84,
+    nom: "Element technique",
+    lvl: 5,
+    hp: 10,
+    baseHp: 10,
+    atk: 10,
+    atkDispo: false,
+    img: "img/card111.png",
+    imgMinia: "img/cardfight111.png",
+    famille: "Elementaire",
+    texte: "*",
+    magnetisme: true,
+  },
+  {
+    id: 85,
+    nom: "Ama-tueur de thé",
+    lvl: 6,
+    hp: 6,
+    baseHp: 6,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card112.png",
+    imgMinia: "img/cardfight112.png",
+    famille: "Elementaire",
+    texte: "*",
+    criDeGuerreUnique: (carte, bonusTourbillonDeSable, bonusAtkElem) => {
+
+      carte.atk += 3 + bonusAtkElem;
+      carte.buffAtk += 3 + bonusAtkElem;
+      carte.hp += 3 + bonusTourbillonDeSable;
+      carte.buffHp += 3 + bonusTourbillonDeSable;
+
+    },
+  },
+  {
+    id: 86,
+    nom: "Atrocité aride",
+    lvl: 6,
+    hp: 6,
+    baseHp: 6,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card113.png",
+    imgMinia: "img/cardfight113.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 87,
+    nom: "Gentil djinn",
+    lvl: 6,
+    hp: 5,
+    baseHp: 5,
+    atk: 4,
+    atkDispo: false,
+    img: "img/card114.png",
+    imgMinia: "img/cardfight114.png",
+    imgMiniaProvoc: "img/cardfight114-provoc.png",
+    famille: "Elementaire",
+    texte: "*",
+    piocherCarte: true,
+    provocation: true,
+    provocationUse: true,
+  },
+  {
+    id: 88,
+    nom: "Rejeton de lumière amplifié",
+    lvl: 6,
+    hp: 9,
+    baseHp: 9,
+    atk: 5,
+    atkDispo: false,
+    img: "img/card115.png",
+    imgMinia: "img/cardfight115.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 89,
+    nom: "Elementaire de surprise",
+    lvl: 6,
+    hp: 8,
+    baseHp: 8,
+    atk: 8,
+    atkDispo: false,
+    img: "img/card116.png",
+    imgMinia: "img/cardfight116.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 90,
+    nom: "Eruption de mana déchainée",
+    lvl: 6,
+    hp: 4,
+    baseHp: 4,
+    atk: 6,
+    atkDispo: false,
+    img: "img/card117.png",
+    imgMinia: "img/cardfight117.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Elementaire",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+  {
+    id: 91,
+    nom: "Elementaire",
+    lvl: 7,
+    hp: 3,
+    baseHp: 3,
+    atk: 3,
+    atkDispo: false,
+    img: "img/card118.png",
+    imgMinia: "img/cardfight118.png",
+    famille: "Les Sabre-Tempête",
+    texte: "*",
+  },
+]

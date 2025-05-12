@@ -1,0 +1,8 @@
+{
+  "appId": "com.zephyrhot.prod",
+  "appName": "brawlcardsorigins",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http"
+  }
+}

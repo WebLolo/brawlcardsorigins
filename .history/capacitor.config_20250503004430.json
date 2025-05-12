@@ -1,0 +1,8 @@
+{
+  "appId": "com.zephyrhot.prod",
+  "appName": "BattleCardBattleGround",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http"
+  }
+}
